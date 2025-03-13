@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -28,10 +28,11 @@ class User extends Authenticatable
         'nom',
         'prenom',
         'email',
-        'password', // Correction ici (obligatoire pour Sanctum)
+        'password', // ✅ Nécessaire pour Sanctum
         'telephone',
         'adresse',
         'photo_profil',
+        'auto_ecole_id', // ✅ Ajouté pour gérer l'assignation à une auto-école
     ];
 
     /**
@@ -47,13 +48,21 @@ class User extends Authenticatable
     /**
      * Les attributs qui doivent être castés.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'email_verifie_a' => 'datetime',
-            'password' => 'hashed', // Correction ici
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed', // ✅ Sécurité renforcée avec hashing natif
         ];
+    }
+
+    /**
+     * Relation : Un utilisateur appartient à une auto-école (sauf SuperAdmin).
+     */
+    public function autoEcole()
+    {
+        return $this->belongsTo(\App\Models\AutoEcole::class, 'auto_ecole_id');
     }
 }
