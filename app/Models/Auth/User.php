@@ -63,6 +63,6 @@ class User extends Authenticatable
      */
     public function autoEcole()
     {
-        return $this->belongsTo(\App\Models\AutoEcole::class, 'auto_ecole_id');
+        return $this->belongsTo(\App\Models\AutoEcole\AutoEcole::class, 'auto_ecole_id');
     }
 }

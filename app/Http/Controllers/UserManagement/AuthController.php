@@ -40,7 +40,7 @@ class AuthController extends Controller
             ]);
 
             // Création de l'utilisateur
-            $utilisateur = User::create([
+            $utilisateur = \App\Models\Auth\User::create([
                 'nom' => $validatedData['nom'],
                 'prenom' => $validatedData['prenom'] ?? null,
                 'email' => $validatedData['email'],
