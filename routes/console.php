@@ -8,3 +8,8 @@ Artisan::command('inspire', function () {
     /** @var ClosureCommand $this */
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('abonnements:check-expiration', function () {
+    Artisan::call('abonnements:check-expiration');
+    $this->comment('Vérification des abonnements expirés effectuée.');
+});
