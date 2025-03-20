@@ -90,7 +90,7 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
             }
 
-            $request->session()->regenerate(); // ✅ Regénère la session pour Sanctum
+            // $request->session()->regenerate(); // ✅ Regénère la session pour Sanctum
 
             return response()->json(['message' => 'Connexion réussie'], 200);
         } catch (ValidationException $e) {
