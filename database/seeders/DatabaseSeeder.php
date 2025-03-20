@@ -2,20 +2,27 @@
 
 namespace Database\Seeders;
 
-use Spatie\Permission\Models\Role;
 use App\Models\Auth\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Spatie\Permission\Models\Role;
+
 use Illuminate\Database\Seeder;
 use App\Models\SchoolManagement\AutoEcole;
 use App\Models\SchoolManagement\Abonnement;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+
+        // ✅ Générer des utilisateurs test
+        User::factory(10)->create();
+
+        // ✅ Ajouter les rôles par défaut
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'moniteur', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'eleve', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'comptable', 'guard_name' => 'web']);
+
 
         $autoEcole = AutoEcole::factory()->create();
 
@@ -28,18 +35,6 @@ class DatabaseSeeder extends Seeder
             'date_fin' => now()->subDays(1), // ✅ Expiré
             'statut' => true, // ✅ Commence avec `true`
         ]);
-        // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'nom' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
-
-
-        // Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        // Role::firstOrCreate(['name' => 'moniteur', 'guard_name' => 'web']);
-        // Role::firstOrCreate(['name' => 'eleve', 'guard_name' => 'web']);
-        // Role::firstOrCreate(['name' => 'comptable', 'guard_name' => 'web']);
     }
 }
