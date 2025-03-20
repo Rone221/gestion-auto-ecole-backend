@@ -20,6 +20,10 @@ class Abonnement extends Model
         'statut'
     ];
 
+    protected $casts = [
+        'statut' => 'boolean',
+    ];
+
     public function autoEcole()
     {
         return $this->belongsTo(AutoEcole::class);

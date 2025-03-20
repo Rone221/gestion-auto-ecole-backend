@@ -17,6 +17,9 @@ Route::prefix('abonnements')->group(function () {
 Route::prefix('auto-ecoles')->group(function () {
     Route::get('/', [AutoEcoleController::class, 'index']);
     Route::post('/', [AutoEcoleController::class, 'store']);
+    Route::get('/{id}', [AutoEcoleController::class, 'show']);
+    Route::put('/{id}', [AutoEcoleController::class, 'update']);
+    Route::delete('/{id}', [AutoEcoleController::class, 'destroy']);
     Route::patch('{id}/toggle-status', [AutoEcoleController::class, 'toggleStatus']); // ✅ Correction ici
 });
 

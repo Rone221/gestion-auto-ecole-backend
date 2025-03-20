@@ -16,21 +16,33 @@ class CheckAbonnementExpiration extends Command
     {
         $today = Carbon::now();
 
-        // Trouver les abonnements expirés
+        // 🔎 Récupérer les abonnements expirés
         $expiredAbonnements = Abonnement::where('date_fin', '<', $today)
-            ->where('statut', 'payé')
-            ->update(['statut' => 'non payé']);
-
-        // Envoyer un rappel de paiement pour les abonnements qui expirent bientôt (dans 3 jours)
-        $expiringSoon = Abonnement::whereBetween('date_fin', [$today, $today->copy()->addDays(3)])
-            ->where('statut', 'payé')
+            ->where('statut', true)
             ->get();
 
-        foreach ($expiringSoon as $abonnement) {
-            Log::info("Rappel : L'abonnement de l'auto-école ID {$abonnement->auto_ecole_id} expire bientôt.");
-            // Ici, on peut ajouter une notification par email/SMS.
-        }
+        if ($expiredAbonnements->isNotEmpty()) {
+            foreach ($expiredAbonnements as $abonnement) {
+                Log::info("🔴 Expiration détectée : Auto-école ID {$abonnement->auto_ecole_id} | Statut AVANT : {$abonnement->statut}");
 
-        $this->info("Vérification des abonnements expirés terminée.");
+                // 🔄 Forcer la mise à jour en passant par Eloquent
+                $abonnement->update(['statut' => false]);
+
+                // 🔄 Recharger l'objet pour assurer la mise à jour correcte
+                $abonnement->refresh();
+
+                Log::info("🟢 Mise à jour effectuée : Auto-école ID {$abonnement->auto_ecole_id} | Statut APRÈS : {$abonnement->statut}");
+            }
+
+            $this->info("✅ {$expiredAbonnements->count()} abonnements expirés ont été mis à jour.");
+        } else {
+            $this->info("✅ Aucun abonnement expiré trouvé.");
+        }
     }
+
+
+
+        
+
+    
 }

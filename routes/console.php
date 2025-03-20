@@ -10,6 +10,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('abonnements:check-expiration', function () {
-    Artisan::call('abonnements:check-expiration');
+    $this->info('Commande `abonnements:check-expiration` exécutée');
     $this->comment('Vérification des abonnements expirés effectuée.');
 });
