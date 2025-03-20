@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\UserManagement;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -9,8 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Controllers\Controller;
-
 
 class AuthController extends Controller
 {
@@ -42,7 +41,7 @@ class AuthController extends Controller
             ]);
 
             // Création de l'utilisateur
-            $utilisateur = User::create([
+            $utilisateur = \App\Models\Auth\User::create([
                 'nom' => $validatedData['nom'],
                 'prenom' => $validatedData['prenom'] ?? null,
                 'email' => $validatedData['email'],

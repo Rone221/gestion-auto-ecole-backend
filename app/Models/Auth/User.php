@@ -12,6 +12,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+
+
     /**
      * Nom de la table associée.
      *
@@ -63,6 +69,6 @@ class User extends Authenticatable
      */
     public function autoEcole()
     {
-        return $this->belongsTo(\App\Models\AutoEcole::class, 'auto_ecole_id');
+        return $this->belongsTo(\App\Models\AutoEcole\AutoEcole::class, 'auto_ecole_id');
     }
 }
