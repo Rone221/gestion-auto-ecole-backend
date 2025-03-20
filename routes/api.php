@@ -1,16 +1,15 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SchoolManagement\AutoEcoleController;
 use App\Http\Controllers\SchoolManagement\AbonnementController;
+use App\Http\Controllers\UserManagement\AuthController;
 
 // Route::patch('/auto-ecoles/{id}/toggle-status', [AutoEcoleController::class, 'toggleStatus']);
 
 Route::prefix('abonnements')->group(function () {
     Route::get('/', [AbonnementController::class, 'index']);
     Route::post('/', [AbonnementController::class, 'store']);
-    
 });
 
 

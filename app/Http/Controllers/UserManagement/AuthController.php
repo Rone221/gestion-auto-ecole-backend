@@ -27,7 +27,7 @@ class AuthController extends Controller
                 'telephone' => 'nullable|string|max:20',
                 'adresse' => 'nullable|string|max:255',
                 'photo_profil' => 'nullable|string',
-                'role' => 'required|string|in:admin,moniteur,eleve,comptable',
+                // 'role' => 'required|string|in:admin,moniteur,eleve,comptable',
             ], [
                 'nom.required' => 'Le nom est requis.',
                 'email.required' => 'L\'adresse email est requise.',
@@ -36,8 +36,8 @@ class AuthController extends Controller
                 'password.required' => 'Le mot de passe est requis.',
                 'password.min' => 'Le mot de passe doit contenir au moins 6 caractères.',
                 'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-                'role.required' => 'Le rôle est requis.',
-                'role.in' => 'Le rôle fourni est invalide.',
+                // 'role.required' => 'Le rôle est requis.',
+                // 'role.in' => 'Le rôle fourni est invalide.',
             ]);
 
             // Création de l'utilisateur
@@ -51,18 +51,18 @@ class AuthController extends Controller
                 'photo_profil' => $validatedData['photo_profil'] ?? null,
             ]);
 
-            // Vérifier et attribuer le rôle
-            $role = Role::where('name', $validatedData['role'])->first();
-            if (!$role) {
-                return response()->json(['message' => "Le rôle '{$validatedData['role']}' n'existe pas"], 400);
-            }
+            // // Vérifier et attribuer le rôle
+            // $role = Role::where('name', $validatedData['role'])->first();
+            // if (!$role) {
+            //     return response()->json(['message' => "Le rôle '{$validatedData['role']}' n'existe pas"], 400);
+            // }
 
-            $utilisateur->assignRole($role);
+            // $utilisateur->assignRole($role);
 
             return response()->json([
                 'message' => 'Utilisateur créé avec succès',
                 'utilisateur' => $utilisateur,
-                'roles' => $utilisateur->getRoleNames(),
+                // 'roles' => $utilisateur->getRoleNames(),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);

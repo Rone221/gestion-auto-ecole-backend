@@ -2,6 +2,7 @@
 
 namespace App\Models\Auth;
 
+use App\Models\SchoolManagement\AutoEcole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -69,6 +70,6 @@ class User extends Authenticatable
      */
     public function autoEcole()
     {
-        return $this->belongsTo(\App\Models\AutoEcole\AutoEcole::class, 'auto_ecole_id');
+        return $this->belongsTo(AutoEcole::class, 'auto_ecole_id');
     }
 }
