@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SchoolManagement\AutoEcoleController;
 use App\Http\Controllers\SchoolManagement\AbonnementController;
 use App\Http\Controllers\UserManagement\AuthController;
+use App\Http\Controllers\SchoolManagement\PaiementController;
+
+Route::prefix('school-management')->group(function () {
+    Route::apiResource('paiements', PaiementController::class);
+});
 
 // Route::patch('/auto-ecoles/{id}/toggle-status', [AutoEcoleController::class, 'toggleStatus']);
 

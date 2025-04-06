@@ -25,7 +25,13 @@ class AutoEcole extends Model
     return $this->hasMany(Abonnement::class);
     }
 
+    public function paiements()
+    {
+    return $this->hasMany(Paiement::class);
+    }
 }
+
+
 
 
 
