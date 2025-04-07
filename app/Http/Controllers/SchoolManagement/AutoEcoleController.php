@@ -39,16 +39,20 @@ class AutoEcoleController extends Controller
     {
         $validated = $request->validate([
             'responsable' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
+            'nom' => 'required|string|max:255|unique:auto_ecoles,nom',
             'adresse' => 'required|string|max:500',
-            'telephone' => 'required|string|max:20',
+            'telephone' => 'required|string|max:20|unique:auto_ecoles,telephone',
             'email' => 'required|email|unique:auto_ecoles,email',
-            'statut' => 'required|boolean',
         ]);
 
         $autoEcole = AutoEcole::create($validated);
-        return response()->json($autoEcole, 201);
+
+        return response()->json([
+            'message' => 'Auto-école créée avec succès.',
+            'data' => $autoEcole
+        ], 201);
     }
+
 
     /**
      * Modifier une auto-école.

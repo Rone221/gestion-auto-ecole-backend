@@ -78,15 +78,12 @@ class PaiementController extends Controller
     /**
      * Supprimer un paiement.
      */
-    public function destroy($id): JsonResponse
+    public function destroy(string $id)
     {
-        $paiement = Paiement::find($id);
-
-        if (!$paiement) {
-            return response()->json(['message' => 'Paiement non trouvé'], 404);
-        }
-
+        $paiement = Paiement::findOrFail($id);
         $paiement->delete();
-        return response()->json(['message' => 'Paiement supprimé avec succès']);
+
+        return response()->noContent(); // ✅ Retourne bien un 204
     }
+
 }

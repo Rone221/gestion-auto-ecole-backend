@@ -17,6 +17,9 @@ class RelancerPaiementsEnRetardTest extends TestCase
     #[Test]
     public function testPaiementEnRetardEstRelance()
     {
+        // 🕓 Fixe la date pour éviter les incohérences
+        Carbon::setTestNow('2025-04-07 10:00:00');
+
         $autoEcole = AutoEcole::factory()->create();
 
         $paiement = Paiement::factory()->create([
@@ -25,29 +28,34 @@ class RelancerPaiementsEnRetardTest extends TestCase
             'derniere_relance' => null,
         ]);
 
-        Artisan::call('paiements:check-relances');
-
+        Artisan::call('paiements:relancer-retards');
 
         $paiement->refresh();
         $this->assertNotNull($paiement->derniere_relance);
-        $this->assertEquals(now()->toDateString(), $paiement->derniere_relance->toDateString());
+        $this->assertEquals(Carbon::now()->toDateString(), $paiement->derniere_relance->toDateString());
+
+        // 🔁 Reset de l’horloge
+        Carbon::setTestNow();
     }
 
     #[Test]
     public function testPaiementDejaRelanceAujourdHuiNestPasRelance()
     {
+        Carbon::setTestNow('2025-04-07 10:00:00');
+
         $autoEcole = AutoEcole::factory()->create();
 
         $paiement = Paiement::factory()->create([
             'auto_ecole_id' => $autoEcole->id,
             'statut' => 'en_retard',
-            'derniere_relance' => now(),
+            'derniere_relance' => Carbon::now(),
         ]);
 
-        Artisan::call('paiements:check-relances');
-
+        Artisan::call('paiements:relancer-retards');
 
         $paiement->refresh();
-        $this->assertEquals(now()->toDateString(), $paiement->derniere_relance->toDateString());
+        $this->assertEquals(Carbon::now()->toDateString(), $paiement->derniere_relance->toDateString());
+
+        Carbon::setTestNow();
     }
 }
