@@ -27,17 +27,10 @@ class AuthController extends Controller
                 'telephone' => 'nullable|string|max:20',
                 'adresse' => 'nullable|string|max:255',
                 'photo_profil' => 'nullable|string',
-                // 'role' => 'required|string|in:admin,moniteur,eleve,comptable',
+                'role' => 'required|string|exists:roles,name', // ✅ Validation du rôle existant
             ], [
-                'nom.required' => 'Le nom est requis.',
-                'email.required' => 'L\'adresse email est requise.',
-                'email.email' => 'L\'adresse email doit être valide.',
-                'email.unique' => 'Un compte avec cette adresse email existe déjà.',
-                'password.required' => 'Le mot de passe est requis.',
-                'password.min' => 'Le mot de passe doit contenir au moins 6 caractères.',
-                'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-                // 'role.required' => 'Le rôle est requis.',
-                // 'role.in' => 'Le rôle fourni est invalide.',
+                'role.required' => 'Le rôle est requis.',
+                'role.exists' => 'Le rôle spécifié n\'existe pas.',
             ]);
 
             // Création de l'utilisateur
@@ -51,25 +44,24 @@ class AuthController extends Controller
                 'photo_profil' => $validatedData['photo_profil'] ?? null,
             ]);
 
-            // // Vérifier et attribuer le rôle
-            // $role = Role::where('name', $validatedData['role'])->first();
-            // if (!$role) {
-            //     return response()->json(['message' => "Le rôle '{$validatedData['role']}' n'existe pas"], 400);
-            // }
-
-            // $utilisateur->assignRole($role);
+            // Attribution du rôle fourni
+            $utilisateur->assignRole($validatedData['role']);
 
             return response()->json([
                 'message' => 'Utilisateur créé avec succès',
                 'utilisateur' => $utilisateur,
-                // 'roles' => $utilisateur->getRoleNames(),
+                'roles' => $utilisateur->getRoleNames(),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de l\'inscription.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de l\'inscription.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     /**
      * Connexion d'un utilisateur et génération du token API.

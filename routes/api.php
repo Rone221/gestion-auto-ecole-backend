@@ -6,6 +6,7 @@ use App\Http\Controllers\SchoolManagement\AutoEcoleController;
 use App\Http\Controllers\SchoolManagement\AbonnementController;
 use App\Http\Controllers\SchoolManagement\PaiementController;
 use App\Http\Controllers\PublicAccess\ProprietaireInscriptionController;
+use App\Http\Controllers\UserManagement\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,7 @@ use App\Http\Controllers\PublicAccess\ProprietaireInscriptionController;
 
 // 🎯 Inscription spéciale d’un propriétaire d’auto-école
 Route::post('/auth/register-proprietaire', [ProprietaireInscriptionController::class, 'register']);
+Route::get('/roles', action: [RoleController::class, 'index']);
 
 // 🔐 Authentification
 Route::post('/inscription', [AuthController::class, 'register']);
@@ -34,6 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('has.autoecole')->group(function () {
+        // Route::get('/roles', action: [RoleController::class, 'index']);
+
 
         // 🏫 Auto-écoles
         Route::prefix('auto-ecoles')->group(function () {
