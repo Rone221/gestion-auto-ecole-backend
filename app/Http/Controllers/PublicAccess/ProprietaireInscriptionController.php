@@ -84,6 +84,7 @@ class ProprietaireInscriptionController extends Controller
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
+            // dd($e->getMessage());
             return response()->json(['message' => 'Erreur lors de l’inscription.', 'error' => $e->getMessage()], 500);
         }
     }

@@ -99,10 +99,15 @@ class AuthController extends Controller
             $user = Auth::user();
 
             // 2. Regénérer la session pour les navigateurs
-            $request->session()->regenerate();
-
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+            }
             // 3. Générer un token pour les clients mobiles ou API
+
+
             $token = $user->createToken('auth_token')->plainTextToken;
+
+
 
             return response()->json([
                 'message' => 'Connexion réussie',
@@ -113,7 +118,7 @@ class AuthController extends Controller
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la connexion.', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Erreur lors de la connexion.', 'error' => $e->getMessage(),], 500);
         }
     }
 
