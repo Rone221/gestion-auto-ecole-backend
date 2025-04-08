@@ -21,4 +21,13 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
+    protected $routeMiddleware = [
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+
+        // ✅ Ton middleware personnalisé
+        'has.autoecole' => \App\Http\Middleware\EnsureHasAutoEcole::class,
+    ];
 }

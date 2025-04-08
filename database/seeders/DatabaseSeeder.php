@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
         User::factory(10)->create();
 
         // ✅ Ajouter les rôles par défaut
-        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'adminSaas', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'adminAutoEcole', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'moniteur', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'eleve', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'comptable', 'guard_name' => 'web']);
@@ -35,6 +36,5 @@ class DatabaseSeeder extends Seeder
             'date_fin' => now()->subDays(1), // ✅ Expiré
             'statut' => true, // ✅ Commence avec `true`
         ]);
-
     }
 }

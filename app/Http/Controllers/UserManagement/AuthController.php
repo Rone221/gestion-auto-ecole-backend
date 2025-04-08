@@ -86,19 +86,37 @@ class AuthController extends Controller
                 'password.required' => 'Le mot de passe est requis.',
             ]);
 
-            if (!Auth::attempt($validatedData)) {
+            $credentials = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+            ];
+
+            // 1. Vérifier l'utilisateur
+            if (!Auth::attempt($credentials)) {
                 return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
             }
 
-            // $request->session()->regenerate(); // ✅ Regénère la session pour Sanctum
+            $user = Auth::user();
 
-            return response()->json(['message' => 'Connexion réussie'], 200);
+            // 2. Regénérer la session pour les navigateurs
+            $request->session()->regenerate();
+
+            // 3. Générer un token pour les clients mobiles ou API
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Connexion réussie',
+                'token' => $token,
+                'utilisateur' => $user,
+                'roles' => $user->getRoleNames(),
+            ]);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erreur lors de la connexion.', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * Déconnexion et révocation du token.
@@ -107,19 +125,34 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
+
             if (!$user) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
 
-            $user->tokens()->delete();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            // Si une requête avec token a été faite (stateless)
+            if ($request->bearerToken()) {
+                $token = $user->currentAccessToken();
+                if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+                    $token->delete(); // ✅ OK : ici delete() est bien reconnu
+                }
+            }
+
+            // Si c'est une requête via session (stateful)
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
             return response()->json(['message' => 'Déconnexion réussie'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la déconnexion.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de la déconnexion.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     /**
      * Récupérer les informations de l'utilisateur connecté.
@@ -127,16 +160,22 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         try {
-            if (!$request->user()) {
+            $user = $request->user();
+
+            if (!$user) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
 
             return response()->json([
-                'utilisateur' => $request->user(),
-                'roles' => $request->user()->getRoleNames(),
+                'utilisateur' => $user,
+                'roles' => $user->getRoleNames(),
+                'auth_type' => $request->bearerToken() ? 'token' : 'session'
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la récupération du profil.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de la récupération du profil.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

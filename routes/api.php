@@ -5,6 +5,7 @@ use App\Http\Controllers\UserManagement\AuthController;
 use App\Http\Controllers\SchoolManagement\AutoEcoleController;
 use App\Http\Controllers\SchoolManagement\AbonnementController;
 use App\Http\Controllers\SchoolManagement\PaiementController;
+use App\Http\Controllers\PublicAccess\ProprietaireInscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +16,8 @@ use App\Http\Controllers\SchoolManagement\PaiementController;
 | - Auto-écoles & abonnements
 | - Paiements
 */
+
+Route::post('/auth/register-proprietaire', [\App\Http\Controllers\ProprietaireInscriptionController::class, 'register']);
 
 // 🔐 Authentification (Inscription, Connexion, Profil)
 Route::post('/inscription', [AuthController::class, 'register']);
