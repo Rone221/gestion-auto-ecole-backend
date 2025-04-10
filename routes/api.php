@@ -27,6 +27,13 @@ Route::get('/roles', [RoleController::class, 'index']);
 // 🔐 Authentification
 Route::post('/inscription', [AuthController::class, 'register']);
 Route::post('/connexion', [AuthController::class, 'login']);
+// 🔐 Reset mot de passe
+Route::post('/mot-de-passe/oubli', [AuthController::class, 'sendResetLinkEmail']);
+Route::post('/mot-de-passe/reset', [AuthController::class, 'resetPassword']);
+
+// 🔒 Update mot de passe (authentifié)
+Route::middleware('auth:sanctum')->post('/mot-de-passe/update', [AuthController::class, 'updatePassword']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profil', [AuthController::class, 'me']);
