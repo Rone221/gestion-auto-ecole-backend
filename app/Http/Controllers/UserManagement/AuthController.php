@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -27,17 +28,10 @@ class AuthController extends Controller
                 'telephone' => 'nullable|string|max:20',
                 'adresse' => 'nullable|string|max:255',
                 'photo_profil' => 'nullable|string',
-                // 'role' => 'required|string|in:admin,moniteur,eleve,comptable',
+                'role' => 'required|string|exists:roles,name', // ✅ Validation du rôle existant
             ], [
-                'nom.required' => 'Le nom est requis.',
-                'email.required' => 'L\'adresse email est requise.',
-                'email.email' => 'L\'adresse email doit être valide.',
-                'email.unique' => 'Un compte avec cette adresse email existe déjà.',
-                'password.required' => 'Le mot de passe est requis.',
-                'password.min' => 'Le mot de passe doit contenir au moins 6 caractères.',
-                'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-                // 'role.required' => 'Le rôle est requis.',
-                // 'role.in' => 'Le rôle fourni est invalide.',
+                'role.required' => 'Le rôle est requis.',
+                'role.exists' => 'Le rôle spécifié n\'existe pas.',
             ]);
 
             // Création de l'utilisateur
@@ -51,25 +45,24 @@ class AuthController extends Controller
                 'photo_profil' => $validatedData['photo_profil'] ?? null,
             ]);
 
-            // // Vérifier et attribuer le rôle
-            // $role = Role::where('name', $validatedData['role'])->first();
-            // if (!$role) {
-            //     return response()->json(['message' => "Le rôle '{$validatedData['role']}' n'existe pas"], 400);
-            // }
-
-            // $utilisateur->assignRole($role);
+            // Attribution du rôle fourni
+            $utilisateur->assignRole($validatedData['role']);
 
             return response()->json([
                 'message' => 'Utilisateur créé avec succès',
                 'utilisateur' => $utilisateur,
-                // 'roles' => $utilisateur->getRoleNames(),
+                'roles' => $utilisateur->getRoleNames(),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de l\'inscription.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de l\'inscription.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     /**
      * Connexion d'un utilisateur et génération du token API.
@@ -86,19 +79,42 @@ class AuthController extends Controller
                 'password.required' => 'Le mot de passe est requis.',
             ]);
 
-            if (!Auth::attempt($validatedData)) {
+            $credentials = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+            ];
+
+            // 1. Vérifier l'utilisateur
+            if (!Auth::attempt($credentials)) {
                 return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
             }
 
-            // $request->session()->regenerate(); // ✅ Regénère la session pour Sanctum
+            $user = Auth::user();
 
-            return response()->json(['message' => 'Connexion réussie'], 200);
+            // 2. Regénérer la session pour les navigateurs
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+            }
+            // 3. Générer un token pour les clients mobiles ou API
+
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+
+
+            return response()->json([
+                'message' => 'Connexion réussie',
+                'token' => $token,
+                'utilisateur' => $user,
+                'roles' => $user->getRoleNames(),
+            ]);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la connexion.', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Erreur lors de la connexion.', 'error' => $e->getMessage(),], 500);
         }
     }
+
 
     /**
      * Déconnexion et révocation du token.
@@ -107,19 +123,34 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
+
             if (!$user) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
 
-            $user->tokens()->delete();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            // Si une requête avec token a été faite (stateless)
+            if ($request->bearerToken()) {
+                $token = $user->currentAccessToken();
+                if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+                    $token->delete(); // ✅ OK : ici delete() est bien reconnu
+                }
+            }
+
+            // Si c'est une requête via session (stateful)
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
             return response()->json(['message' => 'Déconnexion réussie'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la déconnexion.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de la déconnexion.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     /**
      * Récupérer les informations de l'utilisateur connecté.
@@ -127,16 +158,72 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         try {
-            if (!$request->user()) {
+            $user = $request->user();
+
+            if (!$user) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
 
             return response()->json([
-                'utilisateur' => $request->user(),
-                'roles' => $request->user()->getRoleNames(),
+                'utilisateur' => $user,
+                'roles' => $user->getRoleNames(),
+                'auth_type' => $request->bearerToken() ? 'token' : 'session'
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la récupération du profil.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur lors de la récupération du profil.',
+                'error' => $e->getMessage()
+            ], 500);
         }
+    }
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Mot de passe actuel incorrect'], 403);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json(['message' => 'Mot de passe mis à jour avec succès']);
+    }
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Lien envoyé avec succès'])
+            : response()->json(['message' => 'Erreur d\'envoi'], 500);
+    }
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Mot de passe réinitialisé avec succès'])
+            : response()->json(['message' => 'Échec de la réinitialisation'], 500);
     }
 }
