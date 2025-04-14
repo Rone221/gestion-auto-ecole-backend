@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CourseManagement\CoursController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserManagement\AuthController;
 use App\Http\Controllers\SchoolManagement\AutoEcoleController;
@@ -67,6 +68,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // 💳 Paiements
         Route::prefix('school-management')->group(function () {
             Route::apiResource('paiements', PaiementController::class);
+        });
+        // 📚 Gestion des Cours
+        Route::prefix('cours')->group(function () {
+            Route::get('/', [CoursController::class, 'index']);               // Liste des cours
+            Route::post('/', [CoursController::class, 'store']);              // Planifier un cours (Admin/Moniteur)
+            Route::get('/{cour}', [CoursController::class, 'show']);          // Détails d'un cours
+            Route::put('/{cour}', [CoursController::class, 'update']);        // Modifier un cours
+            Route::delete('/{cour}', [CoursController::class, 'destroy']);    // Supprimer un cours
+
+            Route::patch('/{cour}/reserve', [CoursController::class, 'reserve']); // Réserver un cours (Élève)
+            Route::patch('/{cour}/cancel', [CoursController::class, 'cancel']);   // Annuler une réservation (Élève/Admin)
+            Route::patch('/{cour}/finish', [CoursController::class, 'finish']);   // Terminer un cours (Moniteur/Admin)
+            Route::patch('/{cour}/cancel-definitive', [CoursController::class, 'cancelDefinitive']); // Annuler définitivement (Admin)
         });
     });
 });
