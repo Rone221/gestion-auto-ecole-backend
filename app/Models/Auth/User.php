@@ -2,6 +2,7 @@
 
 namespace App\Models\Auth;
 
+use App\Models\SchoolManagement\AutoEcole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,6 +12,12 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+
 
     /**
      * Nom de la table associée.
@@ -63,6 +70,6 @@ class User extends Authenticatable
      */
     public function autoEcole()
     {
-        return $this->belongsTo(\App\Models\AutoEcole::class, 'auto_ecole_id');
+        return $this->belongsTo(AutoEcole::class, 'auto_ecole_id');
     }
 }

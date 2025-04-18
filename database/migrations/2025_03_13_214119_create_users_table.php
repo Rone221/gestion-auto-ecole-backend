@@ -16,11 +16,14 @@ return new class extends Migration
             $table->string('nom');
             $table->string('prenom')->nullable();
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable(); // ✅ Ajouté ici
             $table->string('password');
             $table->string('telephone')->nullable();
             $table->string('adresse')->nullable();
             $table->string('photo_profil')->nullable();
             $table->foreignId('auto_ecole_id')->nullable()->constrained('auto_ecoles')->onDelete('cascade');
+            $table->rememberToken();
+
             $table->timestamps();
         });
     }
